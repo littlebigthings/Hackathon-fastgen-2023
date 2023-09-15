@@ -1,0 +1,8 @@
+Check user has logged in on all pages
+Clenup UI based on UX
+Check what to do with "resend OPT" on password reset page
+
+Test Cases
+if user lands on any page and does not have jwt
+if user lands on any page and has jwt but does not have token auth
+If jwt expires what will be the expiration time.

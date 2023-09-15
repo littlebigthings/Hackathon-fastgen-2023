@@ -4,28 +4,39 @@ import showError from "./ShowError.js";
 import setLoginToken from "./SetToken.js";
 import { openScreen } from "./SwitchScreens.js";
 
-let passwordResetForm
+let passwordResetForm, optBtn, loaderWrapper;
 function handlePasswordReset() {
     // All data fields.
     passwordResetForm = document.querySelector("[form-type='password-reset']")
     let emailField = passwordResetForm?.querySelector("[input-type='email']");
-    let optBtn = passwordResetForm?.querySelector("[btn-type='send-otp']");
-    
+    optBtn = passwordResetForm?.querySelector("[btn-type='send-otp']");
+    let loginbtn = passwordResetForm?.querySelector("[btn-type='login']");
+    let loaderWrapperToclone = document.querySelector("[wrapper='loader-dark']");
     // Ask for resend opt
     // let resentOtpn = document.querySelector()
-    
+
     // Checks.
-    if (emailField != null && optBtn != null) {
+    if (emailField != null && optBtn != null && loginbtn != null) {
         // Listener.
         optBtn.addEventListener("click", () => {
             let emailVal = emailField.value;
             // Validations.
             if (validate(emailField)) {
+                // disable login btn
+                loaderWrapper = loaderWrapperToclone.cloneNode(true)
+                optBtn.textContent = ""
+                optBtn.appendChild(loaderWrapper);
+                loaderWrapper.classList.remove("hide-wrapper");
+                optBtn.style.pointerEvents = "none";
                 //Call API.
                 callLogin({
                     Email: emailVal,
                 })
             }
+        })
+
+        loginbtn.addEventListener("click", () => {
+            openScreen("login");
         })
     }
 }
@@ -44,7 +55,7 @@ function callLogin(userSignupData) {
             let optToken = data?.resetData?.Data?.resetData?.token;
             if (optToken) {
 
-                let tokenAdded = setLoginToken("otp",optToken);
+                let tokenAdded = setLoginToken("otp", optToken);
                 // open otp screen
                 if(tokenAdded)openScreen("otp");
             }
@@ -52,6 +63,10 @@ function callLogin(userSignupData) {
         .catch((error) => {
             console.error("API Error:", error);
             // Show error.
+            // disable login btn
+            optBtn.textContent = "Try again!"
+            loaderWrapper.classList.add("hide-wrapper");
+            optBtn.style.pointerEvents = "auto";
             showError(passwordResetForm, error)
         });
 }

@@ -3,13 +3,14 @@ import setLoginToken from "./SetToken.js";
 import validate from "./handleValidation.js";
 import showError from "./ShowError.js";
 
-let loginForm
+let loginForm, loginBtn, loaderWrapper;
 function handleLogin() {
     // All data fields.
     loginForm = document.querySelector("[form-type='login']")
     let emailField = loginForm?.querySelector("[input-type='email']");
     let passwordField = loginForm?.querySelector("[input-type='password']");
-    let loginBtn = loginForm?.querySelector("[btn-type='login']");
+    loginBtn = loginForm?.querySelector("[btn-type='login']");
+    let loaderWrapperToClone = document.querySelector("[wrapper='loader']");
     // Checks.
     if (emailField != null && passwordField != null && loginBtn != null) {
         // Listener.
@@ -18,6 +19,12 @@ function handleLogin() {
             let passwordVal = passwordField.value;
             // Validations.
             if (validate(emailField) && validate(passwordField)) {
+                // disable login btn
+                loginBtn.textContent = "";
+                loaderWrapper = loaderWrapperToClone.cloneNode(true);
+                loginBtn.appendChild(loaderWrapper);
+                loaderWrapper.classList.remove("hide-wrapper");
+                loginBtn.style.pointerEvents = "none";
                 //Call API.
                 callLogin({
                     Email: emailVal,
@@ -41,14 +48,17 @@ function callLogin(userSignupData) {
             console.log("API Data:", data.token.Data);
             let jwtToken = data.token?.Data?.token;
             if (jwtToken) {
-                let tokenAdded = setLoginToken("jwtToken",jwtToken);
+                let tokenAdded = setLoginToken("jwtToken", jwtToken);
                 // Redirect to dashboard page.
-                if(tokenAdded)window.location.assign("/dashboard");
+                if (tokenAdded) window.location.assign("/dashboard");
             }
         })
         .catch((error) => {
             console.error("API Error:", error);
             // Show error.
+            loginBtn.textContent = "Try again!"
+            loaderWrapper.classList.add("hide-wrapper");
+            loginBtn.style.pointerEvents = "auto";
             showError(loginForm, error)
         });
 }
