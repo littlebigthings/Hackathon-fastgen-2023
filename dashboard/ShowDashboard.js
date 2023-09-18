@@ -11,6 +11,11 @@ function showDashBoard() {
             "token": jwtToken,
         })
     }
+
+    if(jwtToken == null){
+        window.location.assign("/")
+    }
+    
     fetchApiData(url, options)
         .then((data) => {
             console.log("API Data:", data);

@@ -9,7 +9,12 @@ function loadPages() {
     let pageURl = new URL(document.location);
     let siteId = pageURl?.searchParams.get("siteId");
     let siteUrl = pageURl?.searchParams.get("url");
+    
     let jwtToken = checkToken("jwtToken");
+    if(jwtToken == null){
+        window.location.assign("/")
+    }
+    
     darkLoader.classList.remove("hide-wrapper")
 
     let url = "https://metatags-generator.fastgenapp.com/get-pages";

@@ -9,6 +9,11 @@ function loadPages() {
     let siteId = pageURl?.searchParams.get("siteId");
     let siteUrl = pageURl?.searchParams.get("url");
     let jwtToken = checkToken("jwtToken");
+
+    if(jwtToken == null){
+        window.location.assign("/")
+    }
+    
     darkLoader.classList.remove("hide-wrapper")
 
     let url = "https://metatags-generator.fastgenapp.com/get-pages";
@@ -44,9 +49,11 @@ function showPages(pagesData) {
     let metaWrapperToInject = document.querySelector("[meta-wrapper='inject']");
     let loader = document.querySelector("[wrapper='loader']");
     let clonedMetaWrapper, pageNumber, pageName, currentSchemaElement, generateNewBtn, metaInitialInfoWrapper, clonedLoader, metaGeneratedInfoWrapper, btnText, spanElement, closeBtn;
+   
     if (pagesData?.length > 0) {
         pagesData.forEach((page, index) => {
             let { name, pageUrl, seoSchema } = page;
+           
             if (name == undefined && pageUrl == undefined) return;
             clonedMetaWrapper = metaWrapperToClone.cloneNode(true);
             clonedLoader = loader.cloneNode(true);
@@ -104,12 +111,13 @@ function addGenerateListener(generateNewBtn, wrapper, loader, spanElement, close
         generatedSchemaToShow.innerHTML = "";
         loaderWrapper.classList.remove("hide-wrapper");
         btnText.style.display = "none";
+        
         let clickedOn = evt.currentTarget;
         let selectedPage = clickedOn?.getAttribute("page-url");
         let regenerate = clickedOn?.getAttribute("regenerate");
-        // console.log(selectedPage);
         let pageMetaData = await loadPageNewSchema({ selectedPage, regenerate });
         let codeElement = document.createElement("pre");
+        
         if (pageMetaData?.seoSchema?.Content) {
             let { Content } = pageMetaData?.seoSchema;
             let jsonFormat = JSON.parse(Content)
