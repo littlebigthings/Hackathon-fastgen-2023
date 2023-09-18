@@ -44,13 +44,22 @@ function callLogin(userSignupData) {
     let url = "https://metatags-generator.fastgenapp.com/login";
 
     fetchApiData(url, options)
-        .then((data) => {
-            console.log("API Data:", data.token.Data);
-            let jwtToken = data.token?.Data?.token;
-            if (jwtToken) {
-                let tokenAdded = setLoginToken("jwtToken", jwtToken);
-                // Redirect to dashboard page.
-                if (tokenAdded) window.location.assign("/dashboard");
+        .then(async(data) => {
+            console.log("API Data:", data);
+            if (data.token || data.ok) {
+                let jwtToken = data.token?.Data?.token;
+                if (jwtToken) {
+                    let tokenAdded = setLoginToken("jwtToken", jwtToken);
+                    // Redirect to dashboard page.
+                    if (tokenAdded) window.location.assign("/dashboard");
+                }
+            }
+            else {
+                let errorData = await data.json();
+                loginBtn.textContent = "Try again!"
+                loaderWrapper.classList.add("hide-wrapper");
+                loginBtn.style.pointerEvents = "auto";
+                showError(loginForm, errorData.error)
             }
         })
         .catch((error) => {

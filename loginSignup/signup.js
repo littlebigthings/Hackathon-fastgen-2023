@@ -49,14 +49,23 @@ function callSignup(userSignupData) {
     let url = "https://metatags-generator.fastgenapp.com/signup";
 
     fetchApiData(url, options)
-        .then((data) => {
+        .then(async (data) => {
             console.log("API Data:", data);
-            let jwtToken = data.token?.Data?.token;
-            if (jwtToken) {
-                let tokenAdded = setLoginToken("jwtToken", jwtToken);
-                // Redirect to dashboard page.
-                if (tokenAdded) window.location.assign("/dashboard");
+            if (data.token || data.ok) {
+                let jwtToken = data.token?.Data?.token;
+                if (jwtToken) {
+                    let tokenAdded = setLoginToken("jwtToken", jwtToken);
+                    // Redirect to dashboard page.
+                    if (tokenAdded) window.location.assign("/dashboard");
 
+                }
+            }
+            else {
+                let errorData = await data.json();
+                signupBtn.textContent = "Try again!"
+                loaderWrapper.classList.add("hide-wrapper");
+                signupBtn.style.pointerEvents = "auto";
+                showError(signupForm, errorData.error)
             }
         })
         .catch((error) => {

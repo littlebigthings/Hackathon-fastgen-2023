@@ -50,14 +50,22 @@ function callLogin(userSignupData) {
     let url = "https://metatags-generator.fastgenapp.com/recover";
 
     fetchApiData(url, options)
-        .then((data) => {
+        .then(async (data) => {
             // console.log("API Data:", data);
-            let optToken = data?.resetData?.Data?.resetData?.token;
-            if (optToken) {
-
-                let tokenAdded = setLoginToken("otp", optToken);
-                // open otp screen
-                if(tokenAdded)openScreen("otp");
+            if (data.token || data.ok) {
+                let optToken = data?.resetData?.Data?.resetData?.token;
+                if (optToken) {
+                    let tokenAdded = setLoginToken("otp", optToken);
+                    // open otp screen
+                    if (tokenAdded) openScreen("otp");
+                }
+            }
+            else {
+                let errorData = await data.json();
+                optBtn.textContent = "Try again!"
+                loaderWrapper.classList.add("hide-wrapper");
+                optBtn.style.pointerEvents = "auto";
+                showError(passwordResetForm, errorData.error)
             }
         })
         .catch((error) => {
