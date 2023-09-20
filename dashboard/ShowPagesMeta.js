@@ -10,51 +10,91 @@ function loadPages() {
     let pageURl = new URL(document.location);
     let siteId = pageURl?.searchParams.get("siteId");
     let siteUrl = pageURl?.searchParams.get("url");
+    let siteName = pageURl?.searchParams.get("name");
+    let sideBar = document.querySelector("[wrapper='side-bar']");
+    let metaURL = sideBar?.querySelector("[add='meta-url']");
+    let schemaURL = sideBar?.querySelector("[add-schema='url']");
+    let missingSchemaWrapper = document.querySelector("[wrapper='missing-schema']");
+    let projectName = document.querySelector("[project='name']");
+    let missingSchemaToRedirect = missingSchemaWrapper?.querySelector("[add='schema-url']");
 
-    let jwtToken = checkToken("jwtToken");
-    if (jwtToken == null) {
-        window.location.assign("/")
+
+    if (siteId == null || siteUrl == null) {
+        window.location.assign("/dashboard")
     }
+    else {
+        let currentMetaUrl = metaURL.getAttribute("href");
+        let currentSchemaUrl = schemaURL.getAttribute("href");
+        metaURL.setAttribute("href", currentMetaUrl + `?siteId=${siteId}&url=${siteUrl}`);
+        schemaURL.setAttribute("href", currentSchemaUrl + `?siteId=${siteId}&url=${siteUrl}`);
+        missingSchemaToRedirect.setAttribute("href", currentSchemaUrl + `?siteId=${siteId}&url=${siteUrl}`);
+        projectName.textContent = siteName;
 
-    darkLoader.classList.remove("hide-wrapper")
 
-    let url = "https://metatags-generator.fastgenapp.com/get-pages";
-    let options = {
-        "method": "POST",
-        "content-type": "application/json",
-        "body": JSON.stringify({
-            "token": jwtToken,
-            "siteId": siteId,
-            "baseUrl": siteUrl
-        })
+        let jwtToken = checkToken("jwtToken");
+        if (jwtToken == null) {
+            window.location.assign("/")
+        }
+
+        darkLoader.classList.remove("hide-wrapper")
+
+        let url = "https://metatags-generator.fastgenapp.com/get-pages";
+        let options = {
+            "method": "POST",
+            "content-type": "application/json",
+            "body": JSON.stringify({
+                "token": jwtToken,
+                "siteId": siteId,
+                "baseUrl": siteUrl
+            })
+        }
+        fetchApiData(url, options)
+            .then((data) => {
+                // console.log("API Data:", data);
+                let pagesData = data.pagesData?.Data?.pageUrls;
+                // console.log(pagesData)
+                if (pagesData) {
+                    pagesData.reverse();
+                    showPages(pagesData);
+                    darkLoader.classList.add("hide-wrapper")
+                }
+
+            })
+            .catch((error) => {
+                console.error("API Error:", error);
+                // Show error.
+            });
     }
-    fetchApiData(url, options)
-        .then((data) => {
-            // console.log("API Data:", data);
-            let pagesData = data.pagesData?.Data?.pageUrls;
-            // console.log(pagesData)
-            if (pagesData) {
-                pagesData.reverse();
-                showPages(pagesData);
-                darkLoader.classList.add("hide-wrapper")
-            }
-
-        })
-        .catch((error) => {
-            console.error("API Error:", error);
-            // Show error.
-        });
 }
 
 function showPages(pagesData) {
     let metaWrapperToClone = document.querySelector("[meta-wrapper='to-clone']");
     let metaWrapperToInject = document.querySelector("[meta-wrapper='inject']");
     let loader = document.querySelector("[wrapper='loader']");
+    let allPagesElement = document.querySelector("[show-total='pages']");
+    let allPagesMissing = document.querySelector("[show-total='missing-meta']");
+    let missingSchemaWrapper = document.querySelector("[wrapper='missing-schema']");
+    let missingSchemaText = missingSchemaWrapper?.querySelector("[show-total='missing-schema']");
+
     let clonedMetaWrapper, pageNumber, pageName, metaTitleText, metaDescriptionText, generateNewBtn, metaInitialInfoWrapper, clonedLoader, metaGeneratedInfoWrapper, btnText, spanElement, closeBtn, sameMetaTitleTick, sameMetaDescriptionTick, dropdown;
     if (pagesData?.length > 0) {
+        let currentMissingMetaCount = 0;
+        let currentMissingSchemaCount = 0;
+        allPagesElement.textContent = pagesData.length-1;
         pagesData.forEach((page, index) => {
-            let { metaDescription, metaTitle, name, pageUrl, ogSameDescription, ogSameTitle } = page;
+            let { metaDescription, metaTitle, name, pageUrl, ogSameDescription, ogSameTitle, seoSchema } = page;
             if (metaTitle == undefined && metaDescription == undefined && name == undefined && pageUrl == undefined) return;
+
+            if (metaDescription == null) {
+                currentMissingMetaCount = currentMissingMetaCount + 1;
+            }
+            if (metaTitle == null) {
+                currentMissingMetaCount = currentMissingMetaCount + 1;
+            }
+
+            if(Object.keys(seoSchema).length==0){
+                currentMissingSchemaCount = currentMissingSchemaCount +1;
+            }
             clonedMetaWrapper = metaWrapperToClone.cloneNode(true);
             clonedLoader = loader.cloneNode(true);
             clonedLoader.classList.add("hide-wrapper");
@@ -109,8 +149,21 @@ function showPages(pagesData) {
             metaInitialInfoWrapper.classList.remove("hide-wrapper");
             metaWrapperToInject.appendChild(clonedMetaWrapper);
         });
+        allPagesMissing.textContent = currentMissingMetaCount;
+        missingSchemaText.textContent = currentMissingSchemaCount;
         metaWrapperToClone.remove();
+        generateAllListener();
     }
+}
+
+function generateAllListener(){
+    let generateAll = document.querySelector("[generate='all']");
+    generateAll?.addEventListener("click",()=>{
+        let allgenerateCta = document.querySelectorAll("[meta='generate']");
+        allgenerateCta.forEach(cta => {
+            cta.click();
+        });
+    })
 }
 
 function addGenerateListener(generateNewBtn, wrapper, loader, spanElement, closeBtn, dropdown) {
@@ -166,11 +219,11 @@ function addGenerateListener(generateNewBtn, wrapper, loader, spanElement, close
         let isopen = currentBtn.getAttribute("is-open");
         let arrowImage = currentBtn.querySelector("img");
         // console.log(isopen)
-        if(isopen == "true"){
+        if (isopen == "true") {
             wrapperToshow.classList.add("hide-wrapper");
             arrowImage.classList.remove("up");
             currentBtn.setAttribute("is-open", false);
-        }else{
+        } else {
             wrapperToshow.classList.remove("hide-wrapper");
             arrowImage.classList.add("up");
             currentBtn.setAttribute("is-open", true);
@@ -180,15 +233,7 @@ function addGenerateListener(generateNewBtn, wrapper, loader, spanElement, close
 
 function addCopyListener(copyBtn) {
     let cta = copyBtn;
-
     let clipboard = new ClipboardJS(cta);
-
-    clipboard.on('success', function (e) {
-        let currentTarget = e.trigger;
-        let lastTitle = currentTarget?.textContent;
-        e.trigger.textContent = "Copied!"
-        setTimeout(() => currentTarget.textContent = lastTitle, 1000)
-    });
 }
 
 async function loadPageNewMeta(pageData) {
