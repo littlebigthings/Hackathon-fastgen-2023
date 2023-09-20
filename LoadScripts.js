@@ -9,7 +9,7 @@ function getDomain() {
   } else {
     return typeof LIVE_DOMAIN !== "undefined"
       ? LIVE_DOMAIN
-      : "http://hackathon-fastgen-2023.pages.dev/";
+      : "https://hackathon-fastgen-2023.pages.dev/";
   }
 }
 
