@@ -1,8 +1,6 @@
-// https://metatags-generator.fastgenapp.com/get-pages ->siteId, url, jwtToken
 import fetchApiData from "../loginSignup/APIcall.js";
 import checkToken from "../loginSignup/CheckToken.js";
 import addLogout from "./logout.js";
-// import showError from "../loginSignup/ShowError.js";
 
 function loadPages() {
     let darkLoader = document.querySelector("[wrapper=loader-dark]");
@@ -39,10 +37,10 @@ function loadPages() {
             }
 
         })
-    .catch((error) => {
-        console.error("API Error:", error);
-        // Show error.
-    });
+        .catch((error) => {
+            console.error("API Error:", error);
+            // Show error.
+        });
 }
 
 function showPages(pagesData) {
@@ -50,7 +48,8 @@ function showPages(pagesData) {
     let metaWrapperToInject = document.querySelector("[meta-wrapper='inject']");
     let loader = document.querySelector("[wrapper='loader']");
     let popupWrapper = document.querySelector("[wrapper='popup']");
-    let clonedMetaWrapper, pageNumber, pageName, currentSchemaElement, generateNewBtn, metaInitialInfoWrapper, clonedLoader, clonedLoaderSpecific, metaGeneratedInfoWrapper, btnText, spanElement, closeBtn, specificGenerateNewBtn, spanElementTwo, dropdown;
+
+    let clonedMetaWrapper, pageNumber, pageName, currentSchemaElement, generateNewBtn, metaInitialInfoWrapper, clonedLoader, clonedLoaderSpecific, metaGeneratedInfoWrapper, btnText, spanElement, closeBtn, specificGenerateNewBtn, dropdown, spanElementTwo;
 
     if (pagesData?.length > 0) {
         pagesData.forEach((page, index) => {
@@ -71,7 +70,7 @@ function showPages(pagesData) {
             pageName = clonedMetaWrapper?.querySelector("[meta='name']");
             generateNewBtn = clonedMetaWrapper?.querySelector("[meta='generate']");
             specificGenerateNewBtn = clonedMetaWrapper?.querySelector("[meta='specific-generate']");
-            dropdown = metaInitialInfoWrapper?.querySelector("[btn-type='open-result']");
+            dropdown = metaInitialInfoWrapper?.querySelector("[btn-type-='open-result']");
 
 
             if (seoSchema?.seoSchema) {
@@ -107,39 +106,115 @@ function showPages(pagesData) {
             generateNewBtn.setAttribute("regenerate", false);
 
             //  generateNew meta data function call
-            addGenerateListener(generateNewBtn, metaGeneratedInfoWrapper, clonedLoader, spanElement, closeBtn, popupWrapper, specificGenerateNewBtn, dropdown);
-            // generateBetterSchema({specificGenerateNewBtn, metaGeneratedInfoWrapper, clonedLoaderSpecific, spanElementTwo, clonedMetaWrapper, pageUrl});
+            addGenerateListener({ generateNewBtn, metaGeneratedInfoWrapper, clonedLoader, spanElement, specificGenerateNewBtn, closeBtn, dropdown, popupWrapper });
+
             metaInitialInfoWrapper.classList.remove("hide-wrapper");
             metaWrapperToInject.appendChild(clonedMetaWrapper);
         });
         metaWrapperToClone.remove();
+        // add form submission listener
+        addFormSubmitListener(popupWrapper);
     }
 }
 
-
-function addGenerateListener(generateNewBtn, wrapper, loader, spanElement, closeBtn, popupQuestionWrapper, specificGenerateNewBtn, dropdown) {
-    let generateBtn = generateNewBtn;
-    let wrapperToshow = wrapper;
-    let loaderWrapper = loader;
-    let btnText = spanElement;
-    let closeCta = closeBtn;
-    let openResult = dropdown;
-    let generatedSchemaToShow = wrapperToshow?.querySelector("[schema='generated']");
-    let popupWrapper = popupQuestionWrapper;
-    let triggerPopCta = specificGenerateNewBtn;
-    let popupForm = popupWrapper?.querySelector("[questions='form']");
-    let inputWrapper = popupForm?.querySelector("[input='wrapper']");
-    let formSubmitCta = popupWrapper?.querySelector("[schema='generate']");
+function addFormSubmitListener(formElement) {
+    let popupWrapper = formElement;
+    let formSubmitCta = formElement?.querySelector("[schema='generate']");
+    let popupForm = formElement?.querySelector("[questions='form']");
     let formLoader = document.querySelector("[wrapper='loader']").cloneNode(true);
     let formBtnText = formSubmitCta.textContent;
     let formSpanElement = document.createElement("span");
-   
+    let mainDataWrapper = document.querySelector("[meta-wrapper='inject']");
+
     formSpanElement.textContent = formBtnText;
     formSubmitCta.textContent = "";
     formSubmitCta.appendChild(formSpanElement);
     formSubmitCta.appendChild(formLoader);
+    // let fo
+    formSubmitCta.addEventListener("click", async (evt) => {
+        let details = {};
+        let currentBtn = evt.currentTarget;
+        let pageUrl = currentBtn?.getAttribute("page-url");
+        let currentForm = currentBtn.parentElement;
+        let allInputWrapper = currentForm.querySelectorAll("[input='wrapper']");
+        let loaderWrapper = currentBtn.querySelector("[wrapper='loader']");
+        let btnText = currentBtn.querySelector("span");
+        let triggerdFromCta = mainDataWrapper?.querySelector(`[page-url='${pageUrl}']`);
+        let mainSchemaWrapper = triggerdFromCta?.closest("[meta-wrapper='to-clone']");
+        let wrapperToshow = mainSchemaWrapper?.querySelector("[meta-wrapper='generated']");
+        let generatedSchemaToShow = mainSchemaWrapper?.querySelector("[schema='generated']");
+        let openResultCta = mainDataWrapper?.querySelector("[btn-type-='open-result']");
 
+
+        allInputWrapper.forEach((wrapper, index) => {
+            if (index == 0) return;
+            let question = wrapper.querySelector("[item='question']").textContent;
+            let answer = wrapper.querySelector("[item='answer']");
+            if (answer.value.length > 0) {
+                details = {
+                    [question]: answer.value,
+                    ...details
+                }
+            } else {
+                answer.reportValidity();
+            }
+        })
+
+        if (Object.keys(details).length == allInputWrapper.length - 1) {
+            generatedSchemaToShow.innerHTML = "";
+            currentBtn.style.pointerEvents = "none";
+            loaderWrapper.classList.remove("hide-wrapper");
+            btnText.style.display = "none";
+            let pageMetaData = await loadBetterSchema({ details, pageUrl })
+            let codeElement = document.createElement("pre");
+
+            if (pageMetaData?.seoSchema?.Content) {
+                let { Content } = pageMetaData?.seoSchema;
+                let jsonFormat = JSON.parse(Content)
+                let stringSchema = JSON.stringify(jsonFormat.seoSchema, null, 2)
+
+                codeElement.textContent = stringSchema;
+                generatedSchemaToShow.appendChild(codeElement);
+
+                currentBtn.style.pointerEvents = "auto";
+                btnText.style.display = "inline-block";
+                loaderWrapper.classList.add("hide-wrapper");
+
+                loaderWrapper.classList.add("hide-wrapper");
+                wrapperToshow.classList.remove("hide-wrapper");
+                popupWrapper.classList.add("hide-wrapper");
+                openResultCta.click();
+
+            }
+            else if (pageMetaData?.error) {
+                console.log(pageMetaData.error)
+            }
+        }
+    })
+
+    popupForm.addEventListener("submit", (evt) => {
+        evt.preventDefault();
+        evt.stopImmediatePropogation();
+    })
+}
+
+function addGenerateListener(btnObject) {
+    let generateBtn = btnObject.generateNewBtn;
+    let wrapperToshow = btnObject.metaGeneratedInfoWrapper;
+    let loaderWrapper = btnObject.clonedLoader;
+    let btnText = btnObject.spanElement;
+    let closeCta = btnObject.closeBtn;
+    let openResult = btnObject.dropdown;
+    let generatedSchemaToShow = wrapperToshow?.querySelector("[schema='generated']");
+    let popupWrapper = btnObject.popupWrapper;
+    let triggerPopCta = btnObject.specificGenerateNewBtn;
+    let popupForm = popupWrapper?.querySelector("[questions='form']");
+    let formSubmitCta = popupWrapper?.querySelector("[schema='generate']");
+    let inputWrapper = popupForm?.querySelector("[input='wrapper']");
+
+    // Add first generate listener
     generateBtn.addEventListener("click", async (evt) => {
+        generateBtn.style.pointerEvents = "none";
         generatedSchemaToShow.innerHTML = "";
         loaderWrapper.classList.remove("hide-wrapper");
         btnText.style.display = "none";
@@ -159,7 +234,9 @@ function addGenerateListener(generateNewBtn, wrapper, loader, spanElement, close
             generatedSchemaToShow.appendChild(codeElement);
             btnText.style.display = "inline-block";
             loaderWrapper.classList.add("hide-wrapper");
-            wrapperToshow.classList.remove("hide-wrapper");
+            openResult.click();
+            // wrapperToshow.classList.remove("hide-wrapper");
+            generateBtn.style.pointerEvents = "auto";
             clickedOn.setAttribute("regenerate", true);
             btnText.textContent = "Regenerate";
         }
@@ -168,6 +245,7 @@ function addGenerateListener(generateNewBtn, wrapper, loader, spanElement, close
         }
     });
 
+    // listener for popup open and add new questions
     triggerPopCta?.addEventListener("click", async (evt) => {
         // remove old inputs.
         removeOldInputs();
@@ -209,82 +287,29 @@ function addGenerateListener(generateNewBtn, wrapper, loader, spanElement, close
 
     })
 
-    formSubmitCta.addEventListener("click", async (evt) => {
-        generatedSchemaToShow.innerHTML = "";
-        let details = {};
-        let currentBtn = evt.currentTarget;
-        let pageUrl = currentBtn?.getAttribute("page-url");
-        let currentForm = currentBtn.parentElement;
-        let allInputWrapper = currentForm.querySelectorAll("[input='wrapper']");
-        let loaderWrapper = currentBtn.querySelector("[wrapper='loader']");
-        let btnText = currentBtn.querySelector("span");
-
-        currentBtn.style.pointerEvents = "none";
-        loaderWrapper.classList.remove("hide-wrapper");
-        btnText.style.display = "none";
-
-        allInputWrapper.forEach(wrapper => {
-            let question = wrapper.querySelector("[item='question']").textContent;
-            let answer = wrapper.querySelector("[item='answer']").value;
-            details = {
-                [question]: answer,
-                ...details
-
-            }
-
-        })
-        let pageMetaData = await loadBetterSchema({ details, pageUrl })
-        let codeElement = document.createElement("pre");
-
-        if (pageMetaData?.seoSchema?.Content) {
-            let { Content } = pageMetaData?.seoSchema;
-            let jsonFormat = JSON.parse(Content)
-            let stringSchema = JSON.stringify(jsonFormat.seoSchema, null, 2)
-
-            codeElement.textContent = stringSchema;
-            generatedSchemaToShow.appendChild(codeElement);
-
-            currentBtn.style.pointerEvents = "auto";
-            btnText.style.display = "inline-block";
-            loaderWrapper.classList.add("hide-wrapper");
-
-            loaderWrapper.classList.add("hide-wrapper");
-            wrapperToshow.classList.remove("hide-wrapper");
-            popupWrapper.classList.add("hide-wrapper");
-
-        }
-        else if (pageMetaData?.error) {
-            console.log(pageMetaData.error)
-        }
-    })
-
-    popupForm.addEventListener("submit", (evt) => {
-        evt.preventDefault();
-        evt.stopImmediatePropogation();
-    })
-
-
+    // close current open card.
     closeCta.addEventListener("click", () => {
         openResult.click();
-    })
+    });
+
+    // dropdown functionality.
     openResult.addEventListener("click", (evt) => {
         let currentBtn = evt.currentTarget
         let isopen = currentBtn.getAttribute("is-open");
         let arrowImage = currentBtn.querySelector("img");
-        if(isopen == "true"){
+        if (isopen == "true") {
             wrapperToshow.classList.add("hide-wrapper");
             arrowImage.classList.remove("up");
             currentBtn.setAttribute("is-open", false);
-        }else{
+        } else {
             wrapperToshow.classList.remove("hide-wrapper");
             arrowImage.classList.add("up");
             currentBtn.setAttribute("is-open", true);
         }
-    })
+    });
 }
 
 function removeOldInputs() {
-
     let formWrapper = document.querySelector("[meta-wrapper='specific']")
     let allOldInputs = formWrapper?.querySelectorAll("[input='wrapper']");
 
@@ -330,7 +355,8 @@ async function loadBetterSchema(schemaOptions) {
         "content-type": "application/json",
         "body": JSON.stringify({
             "pageUrl": schemaOptions.pageUrl,
-            "details": schemaOptions.details
+            "details": schemaOptions.details,
+            "regenerate": "true",
         })
     }
     return await fetchApiData(url, options)
