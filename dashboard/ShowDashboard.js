@@ -74,11 +74,11 @@ function showSites(sitesArray) {
             let currentMetaUrl = showMetaBtn.getAttribute("href");
             let currentSchemaUrl = showSchemaBtn.getAttribute("href");
             if (customDomains.length > 0) {
-                showMetaBtn.setAttribute("href", currentMetaUrl+`?siteId=${id}&url=${customDomains[0].url}`);
-                showSchemaBtn.setAttribute("href", currentSchemaUrl+`?siteId=${id}&url=${customDomains[0].url}`);
+                showMetaBtn.setAttribute("href", currentMetaUrl+`?siteId=${id}&url=${customDomains[0].url}&name=${displayName}`);
+                showSchemaBtn.setAttribute("href", currentSchemaUrl+`?siteId=${id}&url=${customDomains[0].url}&name=${displayName}`);
             } else {
-                showMetaBtn.setAttribute("href", currentMetaUrl+`?siteId=${id}&url=${shortName}.webflow.io`);
-                showSchemaBtn.setAttribute("href", currentSchemaUrl+`?siteId=${id}&url=${shortName}.webflow.io`);
+                showMetaBtn.setAttribute("href", currentMetaUrl+`?siteId=${id}&url=${shortName}.webflow.io&name=${displayName}`);
+                showSchemaBtn.setAttribute("href", currentSchemaUrl+`?siteId=${id}&url=${shortName}.webflow.io&name=${displayName}`);
             }
             clonedWrapper.classList.remove("hide-wrapper");
 
