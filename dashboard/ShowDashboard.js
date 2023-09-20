@@ -21,7 +21,8 @@ function showDashBoard() {
 
     fetchApiData(url, options)
         .then(async (data) => {
-            if (data.ok) {
+            console.log(data)
+            if (data.siteData||data.ok) {
                 let checkSites = data?.siteData.Data;
                 if (checkSites?.length > 0) {
                     showSites(checkSites)
@@ -36,8 +37,6 @@ function showDashBoard() {
         .catch(async (error) => {
             console.error("API Error:", error);
             // Show error.
-            let errorData = await error.json();
-            showNoSitesFound(errorData);
         });
 }
 
