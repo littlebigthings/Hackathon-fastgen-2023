@@ -5,7 +5,7 @@ function getDomain() {
   if (isLocal) {
     return typeof LOCAL_DOMAIN !== "undefined"
       ? LOCAL_DOMAIN
-      : "http://127.0.0.1:5500";
+      : "http://127.0.0.1:5500/WebApp/";
   } else {
     return typeof LIVE_DOMAIN !== "undefined"
       ? LIVE_DOMAIN
