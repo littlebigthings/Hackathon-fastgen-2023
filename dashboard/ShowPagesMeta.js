@@ -50,7 +50,7 @@ function showPages(pagesData) {
     let metaWrapperToClone = document.querySelector("[meta-wrapper='to-clone']");
     let metaWrapperToInject = document.querySelector("[meta-wrapper='inject']");
     let loader = document.querySelector("[wrapper='loader']");
-    let clonedMetaWrapper, pageNumber, pageName, metaTitleText, metaDescriptionText, generateNewBtn, metaInitialInfoWrapper, clonedLoader, metaGeneratedInfoWrapper, btnText, spanElement, closeBtn, sameMetaTitleTick, sameMetaDescriptionTick;
+    let clonedMetaWrapper, pageNumber, pageName, metaTitleText, metaDescriptionText, generateNewBtn, metaInitialInfoWrapper, clonedLoader, metaGeneratedInfoWrapper, btnText, spanElement, closeBtn, sameMetaTitleTick, sameMetaDescriptionTick, dropdown;
     if (pagesData?.length > 0) {
         pagesData.forEach((page, index) => {
             let { metaDescription, metaTitle, name, pageUrl, ogSameDescription, ogSameTitle } = page;
@@ -67,6 +67,7 @@ function showPages(pagesData) {
             metaDescriptionText = clonedMetaWrapper?.querySelectorAll("[meta='description']");
             sameMetaTitleTick = metaInitialInfoWrapper?.querySelector("[meta='title-same']");
             sameMetaDescriptionTick = metaInitialInfoWrapper?.querySelector("[meta='description-same']");
+            dropdown = metaInitialInfoWrapper?.querySelector("[btn-type-='open-result']");
 
             generateNewBtn = clonedMetaWrapper?.querySelector("[meta='generate']");
             spanElement = document.createElement("span");
@@ -104,7 +105,7 @@ function showPages(pagesData) {
                 })
             }
             //  generateNew meta data function call
-            addGenerateListener(generateNewBtn, metaGeneratedInfoWrapper, clonedLoader, spanElement, closeBtn);
+            addGenerateListener(generateNewBtn, metaGeneratedInfoWrapper, clonedLoader, spanElement, closeBtn, dropdown);
             metaInitialInfoWrapper.classList.remove("hide-wrapper");
             metaWrapperToInject.appendChild(clonedMetaWrapper);
         });
@@ -112,12 +113,13 @@ function showPages(pagesData) {
     }
 }
 
-function addGenerateListener(generateNewBtn, wrapper, loader, spanElement, closeBtn) {
+function addGenerateListener(generateNewBtn, wrapper, loader, spanElement, closeBtn, dropdown) {
     let generateBtn = generateNewBtn;
     let wrapperToshow = wrapper;
     let loaderWrapper = loader;
     let btnText = spanElement;
     let closeCta = closeBtn;
+    let openResult = dropdown;
     let generatedTitleToShow = wrapperToshow?.querySelector("[meta='generated-title']");
     let generatedDescriptionToShow = wrapperToshow?.querySelector("[meta='generated-description']");
     let copyTitleBtn = wrapperToshow?.querySelector("[copy='title']");
@@ -155,7 +157,24 @@ function addGenerateListener(generateNewBtn, wrapper, loader, spanElement, close
     addCopyListener(copyDescriptionBtn);
 
     closeCta.addEventListener("click", () => {
-        wrapperToshow.classList.add("hide-wrapper");
+        // wrapperToshow.classList.add("hide-wrapper");
+        openResult.click();
+    })
+    openResult.addEventListener("click", (evt) => {
+        console.log("clck")
+        let currentBtn = evt.currentTarget
+        let isopen = currentBtn.getAttribute("is-open");
+        let arrowImage = currentBtn.querySelector("img");
+        console.log(isopen)
+        if(isopen == "true"){
+            wrapperToshow.classList.add("hide-wrapper");
+            arrowImage.classList.remove("up");
+            currentBtn.setAttribute("is-open", false);
+        }else{
+            wrapperToshow.classList.remove("hide-wrapper");
+            arrowImage.classList.add("up");
+            currentBtn.setAttribute("is-open", true);
+        }
     })
 }
 
