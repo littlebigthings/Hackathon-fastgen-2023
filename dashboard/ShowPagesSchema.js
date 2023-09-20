@@ -39,10 +39,10 @@ function loadPages() {
             }
 
         })
-    // .catch((error) => {
-    //     console.error("API Error:", error);
-    //     // Show error.
-    // });
+    .catch((error) => {
+        console.error("API Error:", error);
+        // Show error.
+    });
 }
 
 function showPages(pagesData) {
@@ -50,7 +50,7 @@ function showPages(pagesData) {
     let metaWrapperToInject = document.querySelector("[meta-wrapper='inject']");
     let loader = document.querySelector("[wrapper='loader']");
     let popupWrapper = document.querySelector("[wrapper='popup']");
-    let clonedMetaWrapper, pageNumber, pageName, currentSchemaElement, generateNewBtn, metaInitialInfoWrapper, clonedLoader, clonedLoaderSpecific, metaGeneratedInfoWrapper, btnText, spanElement, closeBtn, specificGenerateNewBtn, spanElementTwo;
+    let clonedMetaWrapper, pageNumber, pageName, currentSchemaElement, generateNewBtn, metaInitialInfoWrapper, clonedLoader, clonedLoaderSpecific, metaGeneratedInfoWrapper, btnText, spanElement, closeBtn, specificGenerateNewBtn, spanElementTwo, dropdown;
 
     if (pagesData?.length > 0) {
         pagesData.forEach((page, index) => {
@@ -71,6 +71,7 @@ function showPages(pagesData) {
             pageName = clonedMetaWrapper?.querySelector("[meta='name']");
             generateNewBtn = clonedMetaWrapper?.querySelector("[meta='generate']");
             specificGenerateNewBtn = clonedMetaWrapper?.querySelector("[meta='specific-generate']");
+            dropdown = metaInitialInfoWrapper?.querySelector("[btn-type='open-result']");
 
 
             if (seoSchema?.seoSchema) {
@@ -106,7 +107,7 @@ function showPages(pagesData) {
             generateNewBtn.setAttribute("regenerate", false);
 
             //  generateNew meta data function call
-            addGenerateListener(generateNewBtn, metaGeneratedInfoWrapper, clonedLoader, spanElement, closeBtn, popupWrapper, specificGenerateNewBtn);
+            addGenerateListener(generateNewBtn, metaGeneratedInfoWrapper, clonedLoader, spanElement, closeBtn, popupWrapper, specificGenerateNewBtn, dropdown);
             // generateBetterSchema({specificGenerateNewBtn, metaGeneratedInfoWrapper, clonedLoaderSpecific, spanElementTwo, clonedMetaWrapper, pageUrl});
             metaInitialInfoWrapper.classList.remove("hide-wrapper");
             metaWrapperToInject.appendChild(clonedMetaWrapper);
@@ -122,6 +123,7 @@ function addGenerateListener(generateNewBtn, wrapper, loader, spanElement, close
     let loaderWrapper = loader;
     let btnText = spanElement;
     let closeCta = closeBtn;
+    let openResult = dropdown;
     let generatedSchemaToShow = wrapperToshow?.querySelector("[schema='generated']");
     let popupWrapper = popupQuestionWrapper;
     let triggerPopCta = specificGenerateNewBtn;
@@ -208,6 +210,7 @@ function addGenerateListener(generateNewBtn, wrapper, loader, spanElement, close
     })
 
     formSubmitCta.addEventListener("click", async (evt) => {
+        generatedSchemaToShow.innerHTML = "";
         let details = {};
         let currentBtn = evt.currentTarget;
         let pageUrl = currentBtn?.getAttribute("page-url");
@@ -262,7 +265,21 @@ function addGenerateListener(generateNewBtn, wrapper, loader, spanElement, close
 
 
     closeCta.addEventListener("click", () => {
-        wrapperToshow.classList.add("hide-wrapper");
+        openResult.click();
+    })
+    openResult.addEventListener("click", (evt) => {
+        let currentBtn = evt.currentTarget
+        let isopen = currentBtn.getAttribute("is-open");
+        let arrowImage = currentBtn.querySelector("img");
+        if(isopen == "true"){
+            wrapperToshow.classList.add("hide-wrapper");
+            arrowImage.classList.remove("up");
+            currentBtn.setAttribute("is-open", false);
+        }else{
+            wrapperToshow.classList.remove("hide-wrapper");
+            arrowImage.classList.add("up");
+            currentBtn.setAttribute("is-open", true);
+        }
     })
 }
 

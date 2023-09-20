@@ -161,11 +161,11 @@ function addGenerateListener(generateNewBtn, wrapper, loader, spanElement, close
         openResult.click();
     })
     openResult.addEventListener("click", (evt) => {
-        console.log("clck")
+        // console.log("clck")
         let currentBtn = evt.currentTarget
         let isopen = currentBtn.getAttribute("is-open");
         let arrowImage = currentBtn.querySelector("img");
-        console.log(isopen)
+        // console.log(isopen)
         if(isopen == "true"){
             wrapperToshow.classList.add("hide-wrapper");
             arrowImage.classList.remove("up");
