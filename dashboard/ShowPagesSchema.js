@@ -1,7 +1,6 @@
 // https://metatags-generator.fastgenapp.com/get-pages ->siteId, url, jwtToken
 import fetchApiData from "../loginSignup/APIcall.js";
 import checkToken from "../loginSignup/CheckToken.js";
-// import generateBetterSchema from "./GenerateBetterSchema.js";
 import addLogout from "./logout.js";
 // import showError from "../loginSignup/ShowError.js";
 
