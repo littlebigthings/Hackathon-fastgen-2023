@@ -1,7 +1,7 @@
 import checkToken from "../loginSignup/CheckToken.js";
 import fetchApiData from "../loginSignup/APIcall.js";
 import addLogout from "./logout.js";
-let loader;
+let loader, metaURL, schemaURL, sideBar;
 function showDashBoard() {
     let jwtToken = checkToken("jwtToken");
     let url = "https://metatags-generator.fastgenapp.com/get-site-info";
@@ -21,8 +21,7 @@ function showDashBoard() {
     
     fetchApiData(url, options)
         .then(async (data) => {
-            // console.log("API Data:", await data.json());
-            let checkSites = data?.siteData;
+            let checkSites = data?.siteData.Data;
             if (checkSites?.length > 0) {
                 showSites(checkSites)
             }
@@ -41,11 +40,26 @@ function showDashBoard() {
 function showSites(sitesArray) {
     let parentWrapper = document.querySelector("[wrapper='site-info']").parentElement;
     let siteInfoWrapper = document.querySelector("[wrapper='site-info']");
+    sideBar = document.querySelector("[wrapper='side-bar']");
+    metaURL = sideBar?.querySelector("[add='meta-url']");
+    schemaURL = sideBar?.querySelector("[add-schema='url']");
     loader?.classList.add("hide-wrapper");
     let name, image, showMetaBtn, showSchemaBtn, showMissingSchema, showMissingMeta;
     if (siteInfoWrapper != undefined) {
-        sitesArray.forEach(site => {
+        sitesArray.forEach((site,index) => {
             let { displayName, previewUrl, id, customDomains, shortName, metaTagsCount, schemaCount} = site.Data;
+            if(index == 0){
+                let currentMetaUrl = metaURL.getAttribute("href");
+                let currentSchemaUrl = schemaURL.getAttribute("href");
+                if (customDomains.length > 0) {
+                    metaURL.setAttribute("href", currentMetaUrl+`?siteId=${id}&url=${customDomains[0].url}`);
+                    schemaURL.setAttribute("href", currentSchemaUrl+`?siteId=${id}&url=${customDomains[0].url}`);
+                }
+                else{
+                    metaURL.setAttribute("href", currentMetaUrl+`?siteId=${id}&url=${shortName}.webflow.io`);
+                    schemaURL.setAttribute("href", currentSchemaUrl+`?siteId=${id}&url=${shortName}.webflow.io`);
+                }
+            }
             let clonedWrapper = siteInfoWrapper.cloneNode(true);
             name = clonedWrapper.querySelector("[show-data='name']");
             image = clonedWrapper.querySelector("[show-data='img']");
@@ -57,12 +71,14 @@ function showSites(sitesArray) {
             image.setAttribute("src", previewUrl);
             showMissingMeta.textContent = metaTagsCount;
             showMissingSchema.textContent = schemaCount;
+            let currentMetaUrl = showMetaBtn.getAttribute("href");
+            let currentSchemaUrl = showSchemaBtn.getAttribute("href");
             if (customDomains.length > 0) {
-                showSchemaBtn.setAttribute("href", `/site-pages-schema?siteId=${id}&url=${customDomains[0].url}`);
-                showMetaBtn.setAttribute("href", `/site-pages-meta?siteId=${id}&url=${customDomains[0].url}`);
+                showMetaBtn.setAttribute("href", currentMetaUrl+`?siteId=${id}&url=${customDomains[0].url}`);
+                showSchemaBtn.setAttribute("href", currentSchemaUrl+`?siteId=${id}&url=${customDomains[0].url}`);
             } else {
-                showSchemaBtn.setAttribute("href", `/site-pages-schema?siteId=${id}&url=${shortName}.webflow.io`);
-                showMetaBtn.setAttribute("href", `/site-pages-meta?siteId=${id}&url=${shortName}.webflow.io`);
+                showMetaBtn.setAttribute("href", currentMetaUrl+`?siteId=${id}&url=${shortName}.webflow.io`);
+                showSchemaBtn.setAttribute("href", currentSchemaUrl+`?siteId=${id}&url=${shortName}.webflow.io`);
             }
             clonedWrapper.classList.remove("hide-wrapper");
 
