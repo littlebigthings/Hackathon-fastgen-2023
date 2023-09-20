@@ -25,9 +25,9 @@ function loadPages() {
     else {
         let currentMetaUrl = metaURL.getAttribute("href");
         let currentSchemaUrl = schemaURL.getAttribute("href");
-        metaURL.setAttribute("href", currentMetaUrl + `?siteId=${siteId}&url=${siteUrl}`);
-        schemaURL.setAttribute("href", currentSchemaUrl + `?siteId=${siteId}&url=${siteUrl}`);
-        missingSchemaToRedirect.setAttribute("href", currentSchemaUrl + `?siteId=${siteId}&url=${siteUrl}`);
+        metaURL.setAttribute("href", currentMetaUrl + `?siteId=${siteId}&url=${siteUrl}&name=${siteName}`);
+        schemaURL.setAttribute("href", currentSchemaUrl + `?siteId=${siteId}&url=${siteUrl}&name=${siteName}`);
+        missingSchemaToRedirect.setAttribute("href", currentSchemaUrl + `?siteId=${siteId}&url=${siteUrl}&name=${siteName}`);
         projectName.textContent = siteName;
 
 

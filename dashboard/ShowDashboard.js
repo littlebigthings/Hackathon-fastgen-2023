@@ -52,12 +52,12 @@ function showSites(sitesArray) {
                 let currentMetaUrl = metaURL.getAttribute("href");
                 let currentSchemaUrl = schemaURL.getAttribute("href");
                 if (customDomains.length > 0) {
-                    metaURL.setAttribute("href", currentMetaUrl+`?siteId=${id}&url=${customDomains[0].url}`);
-                    schemaURL.setAttribute("href", currentSchemaUrl+`?siteId=${id}&url=${customDomains[0].url}`);
+                    metaURL.setAttribute("href", currentMetaUrl+`?siteId=${id}&url=${customDomains[0].url}&name=${displayName}`);
+                    schemaURL.setAttribute("href", currentSchemaUrl+`?siteId=${id}&url=${customDomains[0].url}&name=${displayName}`);
                 }
                 else{
-                    metaURL.setAttribute("href", currentMetaUrl+`?siteId=${id}&url=${shortName}.webflow.io`);
-                    schemaURL.setAttribute("href", currentSchemaUrl+`?siteId=${id}&url=${shortName}.webflow.io`);
+                    metaURL.setAttribute("href", currentMetaUrl+`?siteId=${id}&url=${shortName}.webflow.io&name=${displayName}`);
+                    schemaURL.setAttribute("href", currentSchemaUrl+`?siteId=${id}&url=${shortName}.webflow.io&name=${displayName}`);
                 }
             }
             let clonedWrapper = siteInfoWrapper.cloneNode(true);
