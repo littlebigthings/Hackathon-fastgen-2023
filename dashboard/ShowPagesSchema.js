@@ -7,40 +7,61 @@ function loadPages() {
     let pageURl = new URL(document.location);
     let siteId = pageURl?.searchParams.get("siteId");
     let siteUrl = pageURl?.searchParams.get("url");
-    let jwtToken = checkToken("jwtToken");
+    let siteName = pageURl?.searchParams.get("name");
+    let sideBar = document.querySelector("[wrapper='side-bar']");
+    let metaURL = sideBar?.querySelector("[add='meta-url']");
+    let schemaURL = sideBar?.querySelector("[add-schema='url']");
+    let missingSchemaWrapper = document.querySelector("[wrapper='missing-schema']");
+    let projectName = document.querySelector("[project='name']");
+    let missingSchemaToRedirect = missingSchemaWrapper?.querySelector("[add='schema-url']");
 
-    if (jwtToken == null) {
-        window.location.assign("/")
+
+    if (siteId == null || siteUrl == null) {
+        window.location.assign("/dashboard")
     }
+    else {
+        let currentMetaUrl = metaURL.getAttribute("href");
+        let currentSchemaUrl = schemaURL.getAttribute("href");
+        metaURL.setAttribute("href", currentMetaUrl + `?siteId=${siteId}&url=${siteUrl}&name=${siteName}`);
+        schemaURL.setAttribute("href", currentSchemaUrl + `?siteId=${siteId}&url=${siteUrl}&name=${siteName}`);
+        missingSchemaToRedirect.setAttribute("href", currentSchemaUrl + `?siteId=${siteId}&url=${siteUrl}&name=${siteName}`);
+        projectName.textContent = siteName;
 
-    darkLoader.classList.remove("hide-wrapper")
+        let jwtToken = checkToken("jwtToken");
+        if (jwtToken == null) {
+            window.location.assign("/")
+        }
 
-    let url = "https://metatags-generator.fastgenapp.com/get-pages";
-    let options = {
-        "method": "POST",
-        "content-type": "application/json",
-        "body": JSON.stringify({
-            "token": jwtToken,
-            "siteId": siteId,
-            "baseUrl": siteUrl
-        })
+
+        darkLoader.classList.remove("hide-wrapper")
+
+        let url = "https://metatags-generator.fastgenapp.com/get-pages";
+        let options = {
+            "method": "POST",
+            "content-type": "application/json",
+            "body": JSON.stringify({
+                "token": jwtToken,
+                "siteId": siteId,
+                "baseUrl": siteUrl
+            })
+        }
+        fetchApiData(url, options)
+            .then((data) => {
+                console.log("API Data:", data);
+                let pagesData = data.pagesData?.Data?.pageUrls;
+                // console.log(pagesData)
+                if (pagesData) {
+                    pagesData.reverse();
+                    showPages(pagesData);
+                    darkLoader.classList.add("hide-wrapper")
+                }
+
+            })
+        // .catch((error) => {
+        //     console.error("API Error:", error);
+        //     // Show error.
+        // });
     }
-    fetchApiData(url, options)
-        .then((data) => {
-            console.log("API Data:", data);
-            let pagesData = data.pagesData?.Data?.pageUrls;
-            // console.log(pagesData)
-            if (pagesData) {
-                pagesData.reverse();
-                showPages(pagesData);
-                darkLoader.classList.add("hide-wrapper")
-            }
-
-        })
-        .catch((error) => {
-            console.error("API Error:", error);
-            // Show error.
-        });
 }
 
 function showPages(pagesData) {
@@ -49,13 +70,21 @@ function showPages(pagesData) {
     let loader = document.querySelector("[wrapper='loader']");
     let popupWrapper = document.querySelector("[wrapper='popup']");
 
-    let clonedMetaWrapper, pageNumber, pageName, currentSchemaElement, generateNewBtn, metaInitialInfoWrapper, clonedLoader, clonedLoaderSpecific, metaGeneratedInfoWrapper, btnText, spanElement, closeBtn, specificGenerateNewBtn, dropdown, spanElementTwo;
+    let allPagesElement = document.querySelector("[show-total='pages']");
+    let missingSchemaText = document.querySelector("[show-total='missing-schema']");
+
+    let clonedMetaWrapper, pageNumber, pageName, currentSchemaElement, generateNewBtn, metaInitialInfoWrapper, clonedLoader, clonedLoaderSpecific, metaGeneratedInfoWrapper, btnText, spanElement, closeBtn, specificGenerateNewBtn, dropdown, spanElementTwo, schemaExists, schemaNotExists;
 
     if (pagesData?.length > 0) {
+        allPagesElement.textContent = pagesData.length - 1;
+        let currentMissingSchemaCount = 0;
         pagesData.forEach((page, index) => {
             let { name, pageUrl, seoSchema } = page;
 
             if (name == undefined && pageUrl == undefined) return;
+            if (Object.keys(seoSchema).length == 0) {
+                currentMissingSchemaCount = currentMissingSchemaCount + 1;
+            }
             clonedMetaWrapper = metaWrapperToClone.cloneNode(true);
             clonedLoader = loader.cloneNode(true);
             clonedLoader.classList.add("hide-wrapper");
@@ -71,6 +100,8 @@ function showPages(pagesData) {
             generateNewBtn = clonedMetaWrapper?.querySelector("[meta='generate']");
             specificGenerateNewBtn = clonedMetaWrapper?.querySelector("[meta='specific-generate']");
             dropdown = metaInitialInfoWrapper?.querySelector("[btn-type-='open-result']");
+            schemaExists = metaInitialInfoWrapper?.querySelector("[schema='exits']");
+            schemaNotExists = metaInitialInfoWrapper?.querySelector("[schema='not-exist']");
 
 
             if (seoSchema?.seoSchema) {
@@ -81,6 +112,11 @@ function showPages(pagesData) {
                     preText.textContent = parsedString
                     item.appendChild(preText);
                 })
+                schemaExists.style.display = "block";
+                schemaNotExists.style.display = "none";
+            } else {
+                schemaExists.style.display = "none";
+                schemaNotExists.style.display = "block";
             }
             spanElement = document.createElement("span");
             spanElementTwo = document.createElement("span");
@@ -101,6 +137,7 @@ function showPages(pagesData) {
 
             pageNumber.textContent = index;
             pageName.textContent = name;
+            pageName.setAttribute("href", `https://${pageUrl}`)
             generateNewBtn.setAttribute("page-url", `https://${pageUrl}`);
             specificGenerateNewBtn.setAttribute("page-url", `https://${pageUrl}`);
             generateNewBtn.setAttribute("regenerate", false);
@@ -111,10 +148,27 @@ function showPages(pagesData) {
             metaInitialInfoWrapper.classList.remove("hide-wrapper");
             metaWrapperToInject.appendChild(clonedMetaWrapper);
         });
+        missingSchemaText.textContent = currentMissingSchemaCount;
         metaWrapperToClone.remove();
         // add form submission listener
+        generateAllListener();
         addFormSubmitListener(popupWrapper);
     }
+}
+
+function addCopyListener(copyBtn) {
+    let cta = copyBtn;
+    let clipboard = new ClipboardJS(cta);
+}
+
+function generateAllListener() {
+    let generateAll = document.querySelector("[generate='all']");
+    generateAll?.addEventListener("click", () => {
+        let allgenerateCta = document.querySelectorAll("[meta='generate']");
+        allgenerateCta.forEach(cta => {
+            cta.click();
+        });
+    })
 }
 
 function addFormSubmitListener(formElement) {
@@ -211,6 +265,7 @@ function addGenerateListener(btnObject) {
     let popupForm = popupWrapper?.querySelector("[questions='form']");
     let formSubmitCta = popupWrapper?.querySelector("[schema='generate']");
     let inputWrapper = popupForm?.querySelector("[input='wrapper']");
+    let copySchemaBtn = wrapperToshow?.querySelector("[copy='schema']");
 
     // Add first generate listener
     generateBtn.addEventListener("click", async (evt) => {
@@ -230,6 +285,9 @@ function addGenerateListener(btnObject) {
             let jsonFormat = JSON.parse(Content)
             let stringSchema = JSON.stringify(jsonFormat.seoSchema, null, 2)
 
+            copySchemaBtn.setAttribute("data-clipboard-text", `<script type="application/ld+json">${stringSchema}</script>`);
+            // add copyListener
+            addCopyListener(copySchemaBtn);
             codeElement.textContent = stringSchema;
             generatedSchemaToShow.appendChild(codeElement);
             btnText.style.display = "inline-block";

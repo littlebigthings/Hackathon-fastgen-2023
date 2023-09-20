@@ -122,6 +122,7 @@ function showPages(pagesData) {
 
             pageNumber.textContent = index;
             pageName.textContent = name;
+            pageName.setAttribute("href",`https://${pageUrl}`);
 
             ogSameTitle ? sameMetaTitleTick.style.display = "block" : sameMetaTitleTick.style.display = "none";
             ogSameDescription ? sameMetaDescriptionTick.style.display = "block" : sameMetaDescriptionTick.style.display = "none";
