@@ -15,25 +15,29 @@ function showDashBoard() {
         })
     }
 
-    if(jwtToken == null){
+    if (jwtToken == null) {
         window.location.assign("/")
     }
-    
+
     fetchApiData(url, options)
         .then(async (data) => {
-            let checkSites = data?.siteData.Data;
-            if (checkSites?.length > 0) {
-                showSites(checkSites)
+            if (data.ok) {
+                let checkSites = data?.siteData.Data;
+                if (checkSites?.length > 0) {
+                    showSites(checkSites)
+                }
             }
-            else{
-                let checkError = await data.json();
-                showNoSitesFound(checkError);
+            else {
+                let errorData = await data.json();
+                showNoSitesFound(errorData);
             }
 
         })
-        .catch((error) => {
+        .catch(async (error) => {
             console.error("API Error:", error);
             // Show error.
+            let errorData = await error.json();
+            showNoSitesFound(errorData);
         });
 }
 
@@ -46,18 +50,18 @@ function showSites(sitesArray) {
     loader?.classList.add("hide-wrapper");
     let name, image, showMetaBtn, showSchemaBtn, showMissingSchema, showMissingMeta;
     if (siteInfoWrapper != undefined) {
-        sitesArray.forEach((site,index) => {
-            let { displayName, previewUrl, id, customDomains, shortName, metaTagsCount, schemaCount} = site.Data;
-            if(index == 0){
+        sitesArray.forEach((site, index) => {
+            let { displayName, previewUrl, id, customDomains, shortName, metaTagsCount, schemaCount } = site.Data;
+            if (index == 0) {
                 let currentMetaUrl = metaURL.getAttribute("href");
                 let currentSchemaUrl = schemaURL.getAttribute("href");
                 if (customDomains.length > 0) {
-                    metaURL.setAttribute("href", currentMetaUrl+`?siteId=${id}&url=${customDomains[0].url}&name=${displayName}`);
-                    schemaURL.setAttribute("href", currentSchemaUrl+`?siteId=${id}&url=${customDomains[0].url}&name=${displayName}`);
+                    metaURL.setAttribute("href", currentMetaUrl + `?siteId=${id}&url=${customDomains[0].url}&name=${displayName}`);
+                    schemaURL.setAttribute("href", currentSchemaUrl + `?siteId=${id}&url=${customDomains[0].url}&name=${displayName}`);
                 }
-                else{
-                    metaURL.setAttribute("href", currentMetaUrl+`?siteId=${id}&url=${shortName}.webflow.io&name=${displayName}`);
-                    schemaURL.setAttribute("href", currentSchemaUrl+`?siteId=${id}&url=${shortName}.webflow.io&name=${displayName}`);
+                else {
+                    metaURL.setAttribute("href", currentMetaUrl + `?siteId=${id}&url=${shortName}.webflow.io&name=${displayName}`);
+                    schemaURL.setAttribute("href", currentSchemaUrl + `?siteId=${id}&url=${shortName}.webflow.io&name=${displayName}`);
                 }
             }
             let clonedWrapper = siteInfoWrapper.cloneNode(true);
@@ -74,11 +78,11 @@ function showSites(sitesArray) {
             let currentMetaUrl = showMetaBtn.getAttribute("href");
             let currentSchemaUrl = showSchemaBtn.getAttribute("href");
             if (customDomains.length > 0) {
-                showMetaBtn.setAttribute("href", currentMetaUrl+`?siteId=${id}&url=${customDomains[0].url}&name=${displayName}`);
-                showSchemaBtn.setAttribute("href", currentSchemaUrl+`?siteId=${id}&url=${customDomains[0].url}&name=${displayName}`);
+                showMetaBtn.setAttribute("href", currentMetaUrl + `?siteId=${id}&url=${customDomains[0].url}&name=${displayName}`);
+                showSchemaBtn.setAttribute("href", currentSchemaUrl + `?siteId=${id}&url=${customDomains[0].url}&name=${displayName}`);
             } else {
-                showMetaBtn.setAttribute("href", currentMetaUrl+`?siteId=${id}&url=${shortName}.webflow.io&name=${displayName}`);
-                showSchemaBtn.setAttribute("href", currentSchemaUrl+`?siteId=${id}&url=${shortName}.webflow.io&name=${displayName}`);
+                showMetaBtn.setAttribute("href", currentMetaUrl + `?siteId=${id}&url=${shortName}.webflow.io&name=${displayName}`);
+                showSchemaBtn.setAttribute("href", currentSchemaUrl + `?siteId=${id}&url=${shortName}.webflow.io&name=${displayName}`);
             }
             clonedWrapper.classList.remove("hide-wrapper");
 
@@ -87,7 +91,7 @@ function showSites(sitesArray) {
     }
 }
 
-function showNoSitesFound(){
+function showNoSitesFound() {
     let noSitesFoundWrapper = document.querySelector("[wrapper='no-sites']");
     noSitesFoundWrapper?.classList.remove("hide-wrapper");
     loader.classList.add("hide-wrapper");
