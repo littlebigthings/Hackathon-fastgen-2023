@@ -51,13 +51,16 @@ function callLogin(userSignupData) {
 
     fetchApiData(url, options)
         .then(async (data) => {
-            // console.log("API Data:", data);
-            if (data.token || data.ok) {
+            console.log("API Data:", data);
+            if (data.resetData || data.ok) {
                 let optToken = data?.resetData?.Data?.resetData?.token;
                 if (optToken) {
                     let tokenAdded = setLoginToken("otp", optToken);
                     // open otp screen
                     if (tokenAdded) openScreen("otp");
+                    optBtn.textContent = "Send OTP"
+                    loaderWrapper.classList.add("hide-wrapper");
+                    optBtn.style.pointerEvents = "auto";
                 }
             }
             else {

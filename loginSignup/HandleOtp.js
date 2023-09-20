@@ -7,32 +7,35 @@ let otpForm
 function handleOtp() {
     // All data fields.
     otpForm = document.querySelector("[form-type='otp']")
-    let optNumber = otpForm?.querySelector("[input-type='otp']");
+    let otpNumber = otpForm?.querySelector("[input-type='otp']");
     let otpBtn = otpForm?.querySelector("[btn-type='reset']");
-    
+
     // Ask for resend opt
     // let resentOtpn = document.querySelector()
     // Checks.
-    if (optNumber != null && otpBtn != null) {
+    if (otpNumber != null && otpBtn != null) {
         // Listener.
         otpBtn.addEventListener("click", () => {
-            let otpVal = optNumber.value;
+            let otpVal = otpNumber.value;
             // Validations.
-            if (validate(optNumber)) {
-                matchOtp(otpVal)
+            if (validate(otpNumber)) {
+                matchOtp(otpVal, otpNumber)
             }
         })
     }
 }
 
-function matchOtp(otp) {
+function matchOtp(otp, inputElement) {
     let getStoredOtp = checkToken("otp");
-    if(getStoredOtp === otp){
+    if (getStoredOtp === otp) {
         openScreen("new-password");
-    }else{
-        showError(otpForm,"Wrong otp, try again!")
+    } else {
+        inputElement.setCustomValidity("OTP is incorrect");
+        // showError(otpForm, "Wrong otp, try again!")
+        setTimeout(() => inputElement.setCustomValidity(""), 1000)
+        inputElement.reportValidity();
     }
-    
+
 }
 
 export default handleOtp;

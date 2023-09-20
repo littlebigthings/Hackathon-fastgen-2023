@@ -21,6 +21,21 @@ function validate(inputElement, validatePassword = false) {
             input.setCustomValidity("Password is invalid. It must contain at least 8 characters, including uppercase, lowercase, digit, and special character.");
             setTimeout(()=>input.setCustomValidity(""), 1000)
         }
+    }else if(inputType === "email"){
+        if (input.value.trim() === "") {
+            input.setCustomValidity("Email field is empty.");
+        }
+        else {
+            // Email validation using a regular expression
+            const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+            if (emailRegex.test(input.value)) {
+                input.setCustomValidity("");
+            }
+            else {
+                input.setCustomValidity("Invalid email address.");
+                setTimeout(()=>input.setCustomValidity(""), 1000)
+            }
+        }
     }
     return input.reportValidity();
 
