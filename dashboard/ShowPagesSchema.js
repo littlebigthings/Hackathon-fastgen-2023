@@ -101,7 +101,7 @@ function showPages(pagesData) {
             specificGenerateNewBtn = clonedMetaWrapper?.querySelector("[meta='specific-generate']");
             dropdown = metaInitialInfoWrapper?.querySelector("[btn-type-='open-result']");
             schemaExists = metaInitialInfoWrapper?.querySelector("[schema='exits']");
-            schemaNotExists = metaInitialInfoWrapper?.querySelector("[schema='not-exist']");
+            // schemaNotExists = metaInitialInfoWrapper?.querySelector("[schema='not-exist']");
 
 
             if (seoSchema?.seoSchema) {
@@ -113,10 +113,10 @@ function showPages(pagesData) {
                     item.appendChild(preText);
                 })
                 schemaExists.style.display = "block";
-                schemaNotExists.style.display = "none";
+                // schemaNotExists.style.display = "none";
             } else {
                 schemaExists.style.display = "none";
-                schemaNotExists.style.display = "block";
+                // schemaNotExists.style.display = "block";
             }
             spanElement = document.createElement("span");
             spanElementTwo = document.createElement("span");
