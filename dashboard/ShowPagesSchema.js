@@ -117,7 +117,7 @@ function showPages(pagesData) {
 }
 
 
-function addGenerateListener(generateNewBtn, wrapper, loader, spanElement, closeBtn, popupQuestionWrapper, specificGenerateNewBtn) {
+function addGenerateListener(generateNewBtn, wrapper, loader, spanElement, closeBtn, popupQuestionWrapper, specificGenerateNewBtn, dropdown) {
     let generateBtn = generateNewBtn;
     let wrapperToshow = wrapper;
     let loaderWrapper = loader;
